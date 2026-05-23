@@ -1,16 +1,37 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 import BrowseScreen from './src/screens/BrowseScreen';
+import ModeDetailScreen from './src/screens/ModeDetailScreen';
 import LearnScreen from './src/screens/LearnScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import { colors } from './src/theme';
 
 const Tab = createBottomTabNavigator();
+const BrowseStack = createNativeStackNavigator();
+const LearnStack = createNativeStackNavigator();
+
+function BrowseNavigator() {
+  return (
+    <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
+      <BrowseStack.Screen name="BrowseList" component={BrowseScreen} />
+      <BrowseStack.Screen name="ModeDetail" component={ModeDetailScreen} />
+    </BrowseStack.Navigator>
+  );
+}
+
+function LearnNavigator() {
+  return (
+    <LearnStack.Navigator screenOptions={{ headerShown: false }}>
+      <LearnStack.Screen name="LearnHome" component={LearnScreen} />
+    </LearnStack.Navigator>
+  );
+}
 
 export default function App() {
   return (
@@ -45,8 +66,8 @@ export default function App() {
           },
         })}
       >
-        <Tab.Screen name="Browse" component={BrowseScreen} />
-        <Tab.Screen name="Learn" component={LearnScreen} />
+        <Tab.Screen name="Browse" component={BrowseNavigator} />
+        <Tab.Screen name="Learn" component={LearnNavigator} />
         <Tab.Screen name="Practice" component={PracticeScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
