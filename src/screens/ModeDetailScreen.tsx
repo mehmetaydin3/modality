@@ -6,17 +6,46 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getModeById, getRelatedModes, Mode } from '../data/modes';
+import { getModeById, getRelatedModes } from '../data/modes';
 import { markModeExplored } from '../data/progress';
-import { colors, typography, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../theme';
 
 const BRIGHTNESS_COLOR: Record<string, string> = {
   bright: colors.bright,
   neutral: colors.neutral,
   dark: colors.dark,
 };
+
+// YouTube IDs for every classic tune
+const YOUTUBE_IDS: Record<string, string> = {
+  // Ionian
+  'Misty': 'b3DtKAEBNKI',
+  // Dorian
+  'So What': 'ylXk1LBvIqU',
+  'Maiden Voyage': 'dCHEe2BXEQY',
+  // Phrygian
+  'Impressions': 'wqofNDFSKXk',
+  'Spain': 'XfQJMhMRUcw',
+  // Lydian
+  'Flying (E.T. Theme)': 'M2cknGHuEo8',
+  // Mixolydian
+  'Norwegian Wood': 'Y_V7C7V37K0',
+  // Aeolian
+  'My Funny Valentine': 'dLxhFPCYKcI',
+  'Summertime': 'XeOCEYMFEFk',
+  // Locrian
+  'Autumn Leaves (minor ii-V)': 'r-Z8KuwI7Gc',
+};
+
+function openYouTube(tuneTitle: string, youtubeId?: string) {
+  const id = youtubeId || YOUTUBE_IDS[tuneTitle];
+  if (!id) return;
+  const url = `https://www.youtube.com/watch?v=${id}`;
+  Linking.openURL(url);
+}
 
 export default function ModeDetailScreen({ route, navigation }: any) {
   const { modeId } = route.params;
@@ -29,7 +58,7 @@ export default function ModeDetailScreen({ route, navigation }: any) {
   if (!mode) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={typography.body}>Mode not found.</Text>
+        <Text style={{ color: colors.textSecondary }}>Mode not found.</Text>
       </View>
     );
   }
@@ -45,13 +74,13 @@ export default function ModeDetailScreen({ route, navigation }: any) {
           <Text style={styles.backLabel}>Modes</Text>
         </TouchableOpacity>
         <View style={[styles.brightnessBadge, { backgroundColor: accentColor + '22' }]}>
-          <Text style={[styles.brightnessText, { color: accentColor }]}>
-            {mode.brightness}
-          </Text>
+          <Text style={[styles.brightnessText, { color: accentColor }]}>{mode.brightness}</Text>
         </View>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+        {/* Hero */}
         <View style={styles.hero}>
           <View style={styles.heroTop}>
             <Text style={[styles.degree, { color: accentColor }]}>{mode.degree}</Text>
@@ -63,6 +92,7 @@ export default function ModeDetailScreen({ route, navigation }: any) {
 
         <Divider />
 
+        {/* Color note */}
         <Section label="Color note">
           <View style={[styles.colorNoteCard, { borderLeftColor: accentColor }]}>
             <Text style={[styles.colorNoteValue, { color: accentColor }]}>{mode.colorNote}</Text>
@@ -78,6 +108,7 @@ export default function ModeDetailScreen({ route, navigation }: any) {
 
         <Divider />
 
+        {/* Chord context */}
         <Section label="Chord context">
           {mode.chordContexts.map((ctx, i) => (
             <View key={i} style={styles.chordCard}>
@@ -99,21 +130,37 @@ export default function ModeDetailScreen({ route, navigation }: any) {
 
         <Divider />
 
+        {/* Classic tunes */}
         <Section label="Classic tunes">
-          {mode.classicTunes.map((tune, i) => (
-            <View key={i} style={styles.tuneCard}>
-              <View style={styles.tuneTop}>
-                <Text style={styles.tuneTitle}>{tune.title}</Text>
-                <Text style={styles.tuneYear}>{tune.year}</Text>
+          {mode.classicTunes.map((tune, i) => {
+            const hasVideo = !!(tune.youtubeId || YOUTUBE_IDS[tune.title]);
+            return (
+              <View key={i} style={styles.tuneCard}>
+                <View style={styles.tuneTop}>
+                  <Text style={styles.tuneTitle}>{tune.title}</Text>
+                  <Text style={styles.tuneYear}>{tune.year}</Text>
+                </View>
+                <Text style={styles.tuneArtist}>{tune.artist}</Text>
+                <Text style={styles.tuneWhy}>{tune.whyThisTune}</Text>
+                {hasVideo && (
+                  <TouchableOpacity
+                    style={styles.youtubeButton}
+                    onPress={() => openYouTube(tune.title, tune.youtubeId)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="logo-youtube" size={16} color="#FF0000" />
+                    <Text style={styles.youtubeButtonText}>Listen on YouTube</Text>
+                    <Ionicons name="open-outline" size={14} color={colors.textTertiary} />
+                  </TouchableOpacity>
+                )}
               </View>
-              <Text style={styles.tuneArtist}>{tune.artist}</Text>
-              <Text style={styles.tuneWhy}>{tune.whyThisTune}</Text>
-            </View>
-          ))}
+            );
+          })}
         </Section>
 
         <Divider />
 
+        {/* Notable players */}
         <Section label="Notable players">
           <View style={styles.playersRow}>
             {mode.notablePlayers.map((p, i) => (
@@ -126,6 +173,7 @@ export default function ModeDetailScreen({ route, navigation }: any) {
 
         <Divider />
 
+        {/* Theory */}
         <Section label="Theory">
           <View style={styles.theoryGrid}>
             <TheoryRow label="Formula" value={mode.formula} />
@@ -134,6 +182,7 @@ export default function ModeDetailScreen({ route, navigation }: any) {
           </View>
         </Section>
 
+        {/* Related modes */}
         {related.length > 0 && (
           <>
             <Divider />
@@ -222,7 +271,15 @@ const styles = StyleSheet.create({
   tuneTitle: { fontSize: 16, fontWeight: '500', color: colors.textPrimary, flex: 1 },
   tuneYear: { fontSize: 12, color: colors.textTertiary, marginLeft: spacing.sm },
   tuneArtist: { fontSize: 13, color: colors.accent, marginBottom: spacing.sm },
-  tuneWhy: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+  tuneWhy: { fontSize: 13, color: colors.textSecondary, lineHeight: 20, marginBottom: spacing.sm },
+  youtubeButton: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: colors.bgElevated, borderRadius: radius.sm,
+    paddingHorizontal: spacing.md, paddingVertical: 8,
+    borderWidth: 1, borderColor: colors.border, alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  youtubeButtonText: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
   playersRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   playerPill: { backgroundColor: colors.bgCard, borderRadius: radius.full, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 6 },
   playerText: { fontSize: 13, color: colors.textSecondary },
