@@ -9,9 +9,9 @@ import {
   Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getLessonById, nextLesson, LessonPage } from '../data/lessons';
+import { getLessonById, nextLesson, LESSONS } from '../data/lessons';
 import { getModeById } from '../data/modes';
-import { updateLessonProgress } from '../data/progress';
+import { updateLessonProgress, loadProgress, getCompletedLessonIds } from '../data/progress';
 import { colors, spacing, radius } from '../theme';
 import { strings } from '../i18n/strings';
 
@@ -43,10 +43,14 @@ const PAGE_TYPE_COLOR: Record<string, string> = {
   summary: colors.success,
 };
 
+type ScreenState = 'lesson' | 'complete';
+
 export default function LessonScreen({ route, navigation }: any) {
   const { lessonId } = route.params;
   const lesson = getLessonById(lessonId);
   const [currentPage, setCurrentPage] = useState(0);
+  const [screenState, setScreenState] = useState<ScreenState>('lesson');
+  const [completedCount, setCompletedCount] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
   if (!lesson) {
@@ -71,21 +75,85 @@ export default function LessonScreen({ route, navigation }: any) {
 
   const handleFinish = async () => {
     await updateLessonProgress(lessonId, lesson.pages.length - 1, true);
-    const next = nextLesson(lessonId);
-    if (next) {
-      navigation.goBack();
-    } else {
-      navigation.goBack();
-    }
+    // Load fresh progress to get accurate completed count
+    const p = await loadProgress();
+    const completedIds = getCompletedLessonIds(p);
+    setCompletedCount(completedIds.length);
+    setScreenState('complete');
   };
 
-  const handleListen = () => {
-    if (!page.modeId) return;
-    const youtubeId = YOUTUBE_IDS[page.modeId];
+  const handleListen = (modeId: string) => {
+    const youtubeId = YOUTUBE_IDS[modeId];
     if (!youtubeId) return;
     Linking.openURL(`https://www.youtube.com/watch?v=${youtubeId}`);
   };
 
+  const next = nextLesson(lessonId);
+
+  // ── Completion screen ────────────────────────────────────────────────
+  if (screenState === 'complete') {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.completeContainer}>
+          {/* Check */}
+          <View style={styles.completeIcon}>
+            <Ionicons name="checkmark" size={36} color={colors.bg} />
+          </View>
+
+          <Text style={styles.completeTitle}>Lesson complete</Text>
+          <Text style={styles.completeLesson}>{lesson.title}</Text>
+
+          {/* Progress bar */}
+          <View style={styles.completeProgressSection}>
+            <View style={styles.completeProgressRow}>
+              <Text style={styles.completeProgressLabel}>Lessons completed</Text>
+              <Text style={styles.completeProgressValue}>{completedCount} / {LESSONS.length}</Text>
+            </View>
+            <View style={styles.completeTrack}>
+              <View style={[
+                styles.completeFill,
+                { width: `${(completedCount / LESSONS.length) * 100}%` }
+              ]} />
+            </View>
+          </View>
+
+          {/* Next lesson preview */}
+          {next && (
+            <View style={styles.nextCard}>
+              <Text style={styles.nextCardLabel}>Up next</Text>
+              <Text style={styles.nextCardTitle}>{next.title}</Text>
+              <Text style={styles.nextCardSubtitle}>{next.subtitle}</Text>
+            </View>
+          )}
+
+          {/* Buttons */}
+          <View style={styles.completeButtons}>
+            {next && (
+              <TouchableOpacity
+                style={styles.nextLessonButton}
+                onPress={() => {
+                  setCurrentPage(0);
+                  setScreenState('lesson');
+                  navigation.replace('Lesson', { lessonId: next.id });
+                }}
+              >
+                <Text style={styles.nextLessonButtonText}>Start next lesson</Text>
+                <Ionicons name="arrow-forward" size={16} color={colors.bg} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.backToLearnButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.backToLearnText}>Back to lessons</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Lesson screen ────────────────────────────────────────────────────
   const hasAudio = page.type === 'listen' && page.modeId && YOUTUBE_IDS[page.modeId];
   const mode = page.modeId ? getModeById(page.modeId) : null;
 
@@ -115,7 +183,7 @@ export default function LessonScreen({ route, navigation }: any) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Page type indicator */}
+        {/* Page type */}
         <View style={styles.typeRow}>
           <View style={[styles.typeIcon, { backgroundColor: typeColor + '22' }]}>
             <Ionicons name={typeIcon as any} size={16} color={typeColor} />
@@ -123,15 +191,16 @@ export default function LessonScreen({ route, navigation }: any) {
           <Text style={[styles.typeLabel, { color: typeColor }]}>{page.type}</Text>
         </View>
 
-        {/* Heading */}
         <Text style={styles.heading}>{page.heading}</Text>
-
-        {/* Body */}
         <Text style={styles.body}>{page.body}</Text>
 
-        {/* Listen button for listen pages */}
+        {/* YouTube listen button */}
         {hasAudio && (
-          <TouchableOpacity style={styles.listenButton} onPress={handleListen} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.listenButton}
+            onPress={() => handleListen(page.modeId!)}
+            activeOpacity={0.8}
+          >
             <Ionicons name="logo-youtube" size={18} color="#FF0000" />
             <View style={styles.listenButtonText}>
               <Text style={styles.listenLabel}>Listen on YouTube</Text>
@@ -145,7 +214,7 @@ export default function LessonScreen({ route, navigation }: any) {
           </TouchableOpacity>
         )}
 
-        {/* Tip callout */}
+        {/* Tip */}
         {page.tip && (
           <View style={styles.tipCard}>
             <View style={styles.tipIconRow}>
@@ -159,7 +228,7 @@ export default function LessonScreen({ route, navigation }: any) {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Dot navigation */}
+      {/* Dots */}
       <View style={styles.dotsRow}>
         {lesson.pages.map((_, i) => (
           <TouchableOpacity key={i} onPress={() => i < currentPage && goTo(i)}>
@@ -172,7 +241,7 @@ export default function LessonScreen({ route, navigation }: any) {
         ))}
       </View>
 
-      {/* Footer buttons */}
+      {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.navButton, styles.navButtonSecondary, currentPage === 0 && styles.navButtonDisabled]}
@@ -208,6 +277,47 @@ export default function LessonScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   errorText: { color: colors.textSecondary, textAlign: 'center', marginTop: 40 },
+
+  // Complete screen
+  completeContainer: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: spacing.lg, gap: spacing.lg,
+  },
+  completeIcon: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: colors.success,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  completeTitle: { fontSize: 13, fontWeight: '600', color: colors.success, letterSpacing: 1.5, textTransform: 'uppercase' },
+  completeLesson: { fontSize: 24, fontWeight: '300', color: colors.textPrimary, textAlign: 'center' },
+  completeProgressSection: { width: '100%', gap: spacing.sm },
+  completeProgressRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  completeProgressLabel: { fontSize: 13, color: colors.textSecondary },
+  completeProgressValue: { fontSize: 13, color: colors.accent, fontWeight: '600' },
+  completeTrack: { height: 4, backgroundColor: colors.border, borderRadius: 2, overflow: 'hidden' },
+  completeFill: { height: 4, backgroundColor: colors.success, borderRadius: 2 },
+  nextCard: {
+    width: '100%', backgroundColor: colors.bgCard,
+    borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border,
+    padding: spacing.lg,
+  },
+  nextCardLabel: { fontSize: 11, color: colors.textTertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 },
+  nextCardTitle: { fontSize: 18, fontWeight: '500', color: colors.textPrimary, marginBottom: 2 },
+  nextCardSubtitle: { fontSize: 13, color: colors.textSecondary },
+  completeButtons: { width: '100%', gap: spacing.sm },
+  nextLessonButton: {
+    backgroundColor: colors.accent, borderRadius: radius.md,
+    paddingVertical: 14, alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'center', gap: spacing.sm,
+  },
+  nextLessonButtonText: { fontSize: 15, fontWeight: '600', color: colors.bg },
+  backToLearnButton: {
+    paddingVertical: 14, alignItems: 'center',
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
+  },
+  backToLearnText: { fontSize: 15, color: colors.textSecondary },
+
+  // Lesson screen
   navBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: spacing.lg, paddingVertical: spacing.sm,
