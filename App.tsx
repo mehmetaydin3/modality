@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import LearnScreen from './src/screens/LearnScreen';
 import LessonScreen from './src/screens/LessonScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import Onboarding, { hasSeenOnboarding } from './src/components/Onboarding';
 import { colors } from './src/theme';
 
 const Tab = createBottomTabNavigator();
@@ -36,6 +37,14 @@ function LearnNavigator() {
 }
 
 export default function App() {
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    hasSeenOnboarding().then((seen) => setShowOnboarding(!seen));
+  }, []);
+
+  if (showOnboarding === null) return null; // loading
+
   return (
     <NavigationContainer>
       <StatusBar style="light" />
@@ -73,6 +82,10 @@ export default function App() {
         <Tab.Screen name="Practice" component={PracticeScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
+
+      {showOnboarding && (
+        <Onboarding onComplete={() => setShowOnboarding(false)} />
+      )}
     </NavigationContainer>
   );
 }
