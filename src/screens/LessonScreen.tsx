@@ -143,7 +143,7 @@ export default function LessonScreen({ route, navigation }: any) {
             )}
             <TouchableOpacity
               style={styles.backToLearnButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => navigation.navigate("LearnHome", { completedLessonId: lessonId })}
             >
               <Text style={styles.backToLearnText}>Back to lessons</Text>
             </TouchableOpacity>

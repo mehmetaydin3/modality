@@ -17,19 +17,21 @@ import { strings } from '../i18n/strings';
 export default function LearnScreen({ navigation, route }: any) {
   const [completedIds, setCompletedIds] = useState<string[]>([]);
 
-  const refresh = useCallback(async () => {
-    const p = await loadProgress();
-    setCompletedIds(getCompletedLessonIds(p));
+  const refresh = useCallback(() => {
+    loadProgress().then((p) => {
+      setCompletedIds(getCompletedLessonIds(p));
+    });
   }, []);
 
-  // Reload on every focus
-  useFocusEffect(refresh);
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
-  // Also reload if a completedLessonId param was passed back
   useEffect(() => {
     if (route.params?.completedLessonId) {
       refresh();
-      // Clear the param so it doesn't re-fire
       navigation.setParams({ completedLessonId: undefined });
     }
   }, [route.params?.completedLessonId]);
@@ -58,8 +60,7 @@ export default function LearnScreen({ navigation, route }: any) {
                 completed={completed}
                 unlocked={unlocked}
                 onPress={() =>
-                  unlocked &&
-                  navigation.navigate('Lesson', { lessonId: item.id })
+                  unlocked && navigation.navigate('Lesson', { lessonId: item.id })
                 }
               />
             );
