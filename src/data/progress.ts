@@ -235,9 +235,3 @@ export async function resetAllProgress(): Promise<void> {
   } catch {}
 }
 
-export async function resetAllProgress(): Promise<void> {
-  try {
-    await AsyncStorage.removeItem(STORAGE_KEY);
-    await AsyncStorage.removeItem('@modality/onboarding_v1');
-  } catch {}
-}
