@@ -73,7 +73,7 @@ export default function LessonScreen({ route, navigation }: any) {
     await updateLessonProgress(lessonId, lesson.pages.length - 1, true);
     const next = nextLesson(lessonId);
     if (next) {
-      navigation.replace('Lesson', { lessonId: next.id });
+      navigation.goBack();
     } else {
       navigation.goBack();
     }
