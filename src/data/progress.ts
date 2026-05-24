@@ -227,3 +227,17 @@ export function getCompletedLessonIds(progress: UserProgress): string[] {
 function toDateString(date: Date): string {
   return date.toISOString().split('T')[0];
 }
+
+export async function resetAllProgress(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    await AsyncStorage.removeItem('@modality/onboarding_v1');
+  } catch {}
+}
+
+export async function resetAllProgress(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    await AsyncStorage.removeItem('@modality/onboarding_v1');
+  } catch {}
+}

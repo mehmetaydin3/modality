@@ -12,7 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import {
   loadProgress,
-  resetProgress,
+  resetAllProgress,
   countExploredModes,
   countCompletedLessons,
   averageQuizScore,
@@ -34,7 +34,7 @@ export default function ProfileScreen() {
 
   const handleReset = () => {
     Alert.alert(
-      strings.profile.resetProgress,
+      strings.profile.resetAllProgress,
       strings.profile.resetConfirm,
       [
         { text: strings.profile.resetNo, style: 'cancel' },
@@ -42,7 +42,7 @@ export default function ProfileScreen() {
           text: strings.profile.resetYes,
           style: 'destructive',
           onPress: async () => {
-            await resetProgress();
+            await resetAllProgress();
             const fresh = await loadProgress();
             setProgress(fresh);
           },
