@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import BrowseScreen from './src/screens/BrowseScreen';
 import ModeDetailScreen from './src/screens/ModeDetailScreen';
 import LearnScreen from './src/screens/LearnScreen';
+import LessonScreen from './src/screens/LessonScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import { colors } from './src/theme';
@@ -29,6 +30,7 @@ function LearnNavigator() {
   return (
     <LearnStack.Navigator screenOptions={{ headerShown: false }}>
       <LearnStack.Screen name="LearnHome" component={LearnScreen} />
+      <LearnStack.Screen name="Lesson" component={LessonScreen} />
     </LearnStack.Navigator>
   );
 }
