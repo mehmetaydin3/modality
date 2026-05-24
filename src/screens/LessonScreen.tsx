@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import YouTubeEmbed from "../components/YouTubeEmbed";
 import {
   View,
   Text,
@@ -8,11 +9,17 @@ import {
   SafeAreaView,
   Linking,
 } from 'react-native';
+import YouTubeEmbed from "../components/YouTubeEmbed";
 import { Ionicons } from '@expo/vector-icons';
+import YouTubeEmbed from "../components/YouTubeEmbed";
 import { getLessonById, nextLesson, LESSONS } from '../data/lessons';
+import YouTubeEmbed from "../components/YouTubeEmbed";
 import { getModeById } from '../data/modes';
-import { updateLessonProgress, loadProgress, getCompletedLessonIds } from '../data/progress';
+import YouTubeEmbed from "../components/YouTubeEmbed";
+import { updateLessonProgress, loadProgress, getCompletedLessonIds, debugProgress } from '../data/progress';
+import YouTubeEmbed from "../components/YouTubeEmbed";
 import { colors, spacing, radius } from '../theme';
+import YouTubeEmbed from "../components/YouTubeEmbed";
 import { strings } from '../i18n/strings';
 
 const YOUTUBE_IDS: Record<string, string> = {
@@ -74,7 +81,7 @@ export default function LessonScreen({ route, navigation }: any) {
   };
 
   const handleFinish = async () => {
-    await updateLessonProgress(lessonId, lesson.pages.length - 1, true);
+    await updateLessonProgress(lessonId, lesson.pages.length - 1, true); await debugProgress();
     // Load fresh progress to get accurate completed count
     const p = await loadProgress();
     const completedIds = getCompletedLessonIds(p);

@@ -235,3 +235,12 @@ export async function resetAllProgress(): Promise<void> {
   } catch {}
 }
 
+
+export async function debugProgress(): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem('@modality/progress');
+    console.log('PROGRESS DEBUG:', raw);
+  } catch (e) {
+    console.log('PROGRESS ERROR:', e);
+  }
+}
