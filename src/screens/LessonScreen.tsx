@@ -13,17 +13,9 @@ import { getModeById } from '../data/modes';
 import { updateLessonProgress, loadProgress, getCompletedLessonIds } from '../data/progress';
 import { colors, spacing, radius } from '../theme';
 import { strings } from '../i18n/strings';
-import YouTubeEmbed from '../components/YouTubeEmbed';
+import YouTubeEmbed from "../components/YouTubeEmbed";
+import { LESSON_YOUTUBE_IDS } from "../data/youtubeIds";
 
-const YOUTUBE_IDS: Record<string, string> = {
-  ionian:     'b3DtKAEBNKI',
-  dorian:     'ylXk1LBvIqU',
-  phrygian:   'wqofNDFSKXk',
-  lydian:     'M2cknGHuEo8',
-  mixolydian: 'Y_V7C7V37K0',
-  aeolian:    'dLxhFPCYKcI',
-  locrian:    'r-Z8KuwI7Rc',
-};
 
 const PAGE_TYPE_ICON: Record<string, string> = {
   intro:   'musical-notes-outline',
@@ -66,7 +58,7 @@ export default function LessonScreen({ route, navigation }: any) {
   const progress = (currentPage + 1) / lesson.pages.length;
   const typeColor = PAGE_TYPE_COLOR[page.type] || colors.accent;
   const typeIcon = PAGE_TYPE_ICON[page.type] || 'document-outline';
-  const hasEmbed = page.type === 'listen' && page.modeId && YOUTUBE_IDS[page.modeId];
+  const hasEmbed = page.type === 'listen' && page.modeId && LESSON_YOUTUBE_IDS[page.modeId];
   const mode = page.modeId ? getModeById(page.modeId) : null;
 
   const goTo = (index: number) => {
@@ -172,7 +164,7 @@ export default function LessonScreen({ route, navigation }: any) {
                 {mode.classicTunes[0]?.title} · {mode.classicTunes[0]?.artist}
               </Text>
             )}
-            <YouTubeEmbed videoId={YOUTUBE_IDS[page.modeId!]} />
+            <YouTubeEmbed videoId={LESSON_LESSON_YOUTUBE_IDS[page.modeId!]} />
           </View>
         )}
 

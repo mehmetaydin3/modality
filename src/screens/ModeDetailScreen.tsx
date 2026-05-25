@@ -11,7 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { getModeById, getRelatedModes } from '../data/modes';
 import { markModeExplored } from '../data/progress';
 import { colors, spacing, radius } from '../theme';
-import YouTubeEmbed from '../components/YouTubeEmbed';
+import YouTubeEmbed from "../components/YouTubeEmbed";
+import { YOUTUBE_IDS } from "../data/youtubeIds";
 import ScaleDiagram from '../components/ScaleDiagram';
 
 const BRIGHTNESS_COLOR: Record<string, string> = {
@@ -20,18 +21,6 @@ const BRIGHTNESS_COLOR: Record<string, string> = {
   dark: colors.dark,
 };
 
-const YOUTUBE_IDS: Record<string, string> = {
-  'Misty':                    'b3DtKAEBNKI',
-  'So What':                  'ylXk1LBvIqU',
-  'Maiden Voyage':            'dCHEe2BXEQY',
-  'Impressions':              'wqofNDFSKXk',
-  'Spain':                    'XfQJMhMRUcw',
-  'Flying (E.T. Theme)':      'M2cknGHuEo8',
-  'Norwegian Wood':           'Y_V7C7V37K0',
-  'My Funny Valentine':       'dLxhFPCYKcI',
-  'Summertime':               'XeOCEYMFEFk',
-  'Autumn Leaves (minor ii-V)': 'r-Z8KuwI7Gc',
-};
 
 export default function ModeDetailScreen({ route, navigation }: any) {
   const { modeId } = route.params;
