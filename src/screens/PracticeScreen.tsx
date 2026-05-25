@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,15 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { buildQuizSession, QuizQuestion } from '../data/quiz';
+import { buildQuizSession, QuizQuestion, getRandomVideoId } from '../data/quiz';
 import { loadProgress, recordQuizSession, updateStreak } from '../data/progress';
 import { colors, spacing, radius } from '../theme';
 import { strings } from '../i18n/strings';
+import YoutubePlayer from 'react-native-youtube-iframe';
+import { Dimensions } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const PLAYER_HEIGHT = (SCREEN_WIDTH - spacing.lg * 2) * 9 / 16;
 
 type QuizState = 'home' | 'question' | 'answer' | 'result';
 
@@ -24,6 +29,8 @@ export default function PracticeScreen() {
   const [score, setScore] = useState(0);
   const [finalScore, setFinalScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  // Store random video ID per question so it doesn't change on re-render
+  const sessionVideoIds = useRef<Record<string, string | null>>({});
 
   useFocusEffect(
     useCallback(() => {
@@ -34,6 +41,10 @@ export default function PracticeScreen() {
 
   const startQuiz = () => {
     const session = buildQuizSession(10);
+    // Pre-assign random video IDs for the session
+    const videoMap: Record<string, string | null> = {};
+    session.forEach(q => { videoMap[q.id] = getRandomVideoId(q); });
+    sessionVideoIds.current = videoMap;
     setQuestions(session);
     setCurrentIndex(0);
     setScore(0);
@@ -80,6 +91,7 @@ export default function PracticeScreen() {
   }
 
   const question = questions[currentIndex];
+  const videoId = sessionVideoIds.current[question.id] ?? null;
 
   return (
     <QuestionView
@@ -89,6 +101,7 @@ export default function PracticeScreen() {
       selectedAnswer={selectedAnswer}
       showAnswer={quizState === 'answer'}
       score={score}
+      videoId={videoId}
       onAnswer={handleAnswer}
       onNext={handleNext}
       onQuit={() => setQuizState('home')}
@@ -100,7 +113,7 @@ function HomeView({ onStart, streak }: { onStart: () => void; streak: number }) 
   const questionTypes = [
     { icon: 'color-palette-outline', label: 'Color note', desc: 'Name the defining note' },
     { icon: 'layers-outline', label: 'Chord context', desc: 'Which mode fits this chord?' },
-    { icon: 'musical-notes-outline', label: 'Classic tunes', desc: 'Match mode to recording' },
+    { icon: 'musical-notes-outline', label: 'Classic tunes', desc: 'Listen and identify the mode' },
     { icon: 'sunny-outline', label: 'Brightness', desc: 'Dark, neutral, or bright?' },
   ];
 
@@ -115,9 +128,7 @@ function HomeView({ onStart, streak }: { onStart: () => void; streak: number }) 
         {streak > 0 && (
           <View style={styles.streakCard}>
             <Ionicons name="flame" size={20} color={colors.warning} />
-            <Text style={styles.streakText}>
-              {strings.practice.streakDays(streak)} streak
-            </Text>
+            <Text style={styles.streakText}>{strings.practice.streakDays(streak)} streak</Text>
           </View>
         )}
 
@@ -149,14 +160,16 @@ function HomeView({ onStart, streak }: { onStart: () => void; streak: number }) 
 
 function QuestionView({
   question, questionNumber, total, selectedAnswer,
-  showAnswer, score, onAnswer, onNext, onQuit,
+  showAnswer, score, videoId, onAnswer, onNext, onQuit,
 }: {
   question: QuizQuestion; questionNumber: number; total: number;
   selectedAnswer: string | null; showAnswer: boolean; score: number;
+  videoId: string | null;
   onAnswer: (a: string) => void; onNext: () => void; onQuit: () => void;
 }) {
   const progress = questionNumber / total;
   const isCorrect = selectedAnswer === question.correctAnswer;
+  const showVideo = question.type === 'tune_name' && videoId;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -173,6 +186,22 @@ function QuestionView({
       </View>
 
       <ScrollView contentContainerStyle={styles.questionContent} showsVerticalScrollIndicator={false}>
+        {/* YouTube player for tune_name questions */}
+        {showVideo && (
+          <View style={styles.videoWrapper}>
+            <Text style={styles.videoLabel}>Listen before you answer</Text>
+            <YoutubePlayer
+              height={PLAYER_HEIGHT}
+              videoId={videoId!}
+              webViewProps={{
+                allowsInlineMediaPlayback: true,
+                mediaPlaybackRequiresUserAction: false,
+              }}
+              initialPlayerParams={{ rel: false, modestbranding: true }}
+            />
+          </View>
+        )}
+
         <View style={styles.difficultyRow}>
           <View style={[styles.difficultyPill, {
             backgroundColor: question.difficulty === 'beginner'
@@ -265,9 +294,7 @@ function QuestionView({
   );
 }
 
-function ResultView({
-  score, total, onRestart, onRetry,
-}: {
+function ResultView({ score, total, onRestart, onRetry }: {
   score: number; total: number; onRestart: () => void; onRetry: () => void;
 }) {
   const percentage = Math.round((score / total) * 100);
@@ -310,7 +337,6 @@ function ResultView({
         <TouchableOpacity style={styles.restartButton} onPress={onRestart}>
           <Text style={styles.restartText}>Back to practice</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
           <Ionicons name="refresh" size={16} color={colors.accent} />
           <Text style={styles.retryText}>Try again</Text>
@@ -367,6 +393,11 @@ const styles = StyleSheet.create({
   },
   progressFill: { height: 2, backgroundColor: colors.accent, borderRadius: 1 },
   questionContent: { paddingHorizontal: spacing.lg },
+  videoWrapper: { marginBottom: spacing.md },
+  videoLabel: {
+    fontSize: 11, fontWeight: '600', color: colors.textTertiary,
+    letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: spacing.sm,
+  },
   difficultyRow: { marginBottom: spacing.md },
   difficultyPill: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 3, borderRadius: radius.full },
   difficultyText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
