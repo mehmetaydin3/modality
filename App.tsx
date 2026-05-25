@@ -12,7 +12,8 @@ import LessonScreen from './src/screens/LessonScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import Onboarding, { hasSeenOnboarding } from './src/components/Onboarding';
-import { colors } from './src/theme';
+import { colors } from "./src/theme";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const Tab = createBottomTabNavigator();
 const BrowseStack = createNativeStackNavigator();
@@ -46,7 +47,7 @@ export default function App() {
   if (showOnboarding === null) return null; // loading
 
   return (
-    <NavigationContainer>
+    <SafeAreaProvider><NavigationContainer>
       <StatusBar style="light" />
       <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -86,6 +87,6 @@ export default function App() {
       {showOnboarding && (
         <Onboarding onComplete={() => setShowOnboarding(false)} />
       )}
-    </NavigationContainer>
+    </NavigationContainer></SafeAreaProvider>
   );
 }
