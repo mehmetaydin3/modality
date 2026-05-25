@@ -50,7 +50,7 @@ export const MODES: Mode[] = [
       'When a melody wants to feel complete and at home, it reaches for Ionian.',
     colorNote: 'the major 7th',
     colorNoteInterval: '7',
-    intervals: [0, 2, 4, 5, 7, 9, 11],
+    intervals: [0, 2, 4, 5, 7, 9, 11, 12],
     formula: 'W W H W W W H',
     relativeKey: 'C Ionian = C major',
     chordContexts: [
@@ -90,7 +90,7 @@ export const MODES: Mode[] = [
       'It is the sound of Miles Davis on a Tuesday night: effortlessly cool, emotionally present, unhurried.',
     colorNote: 'the natural 6th',
     colorNoteInterval: '6',
-    intervals: [0, 2, 3, 5, 7, 9, 10],
+    intervals: [0, 2, 3, 5, 7, 9, 10, 12],
     formula: 'W H W W W H W',
     relativeKey: 'D Dorian = C major starting on D',
     chordContexts: [
@@ -132,7 +132,7 @@ export const MODES: Mode[] = [
     colorNoteInterval: 'b2',
     avoidNote: 'the flat 2nd (use with intention)',
     avoidNoteInterval: 'b2',
-    intervals: [0, 1, 3, 5, 7, 8, 10],
+    intervals: [0, 1, 3, 5, 7, 8, 10, 12],
     formula: 'H W W W H W W',
     relativeKey: 'E Phrygian = C major starting on E',
     chordContexts: [
@@ -169,7 +169,7 @@ export const MODES: Mode[] = [
       'that lifts it off the ground. It floats, never quite landing.',
     colorNote: 'the raised 4th (#4)',
     colorNoteInterval: '#4',
-    intervals: [0, 2, 4, 6, 7, 9, 11],
+    intervals: [0, 2, 4, 6, 7, 9, 11, 12],
     formula: 'W W W H W W H',
     relativeKey: 'F Lydian = C major starting on F',
     chordContexts: [
@@ -208,7 +208,7 @@ export const MODES: Mode[] = [
       'keeps it from being too clean, too resolved.',
     colorNote: 'the flat 7th',
     colorNoteInterval: 'b7',
-    intervals: [0, 2, 4, 5, 7, 9, 10],
+    intervals: [0, 2, 4, 5, 7, 9, 10, 12],
     formula: 'W W H W W H W',
     relativeKey: 'G Mixolydian = C major starting on G',
     chordContexts: [
@@ -246,7 +246,7 @@ export const MODES: Mode[] = [
       'Unlike Dorian\'s cool composure, Aeolian allows itself to grieve.',
     colorNote: 'the flat 6th',
     colorNoteInterval: 'b6',
-    intervals: [0, 2, 3, 5, 7, 8, 10],
+    intervals: [0, 2, 3, 5, 7, 8, 10, 12],
     formula: 'W H W W H W W',
     relativeKey: 'A Aeolian = C major starting on A',
     chordContexts: [
@@ -288,7 +288,7 @@ export const MODES: Mode[] = [
     colorNoteInterval: 'b5',
     avoidNote: 'the flat 5th (handle with care)',
     avoidNoteInterval: 'b5',
-    intervals: [0, 1, 3, 5, 6, 8, 10],
+    intervals: [0, 1, 3, 5, 6, 8, 10, 12],
     formula: 'H W W H W W W',
     relativeKey: 'B Locrian = C major starting on B',
     chordContexts: [
