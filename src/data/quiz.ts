@@ -239,7 +239,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q-tn-spain',
     type: 'tune_name',
-    prompt: 'Chick Corea's "Spain." Which mode does the opening melody draw from?',
+    prompt: `Chick Corea's "Spain." Which mode does the opening melody draw from?`,
     options: ['Aeolian', 'Locrian', 'Dorian', 'Phrygian'],
     correctAnswer: 'Phrygian',
     explanation:
