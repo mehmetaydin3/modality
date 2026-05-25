@@ -7,7 +7,7 @@ interface ScaleDiagramProps {
   colorNoteInterval: string;
   avoidNoteInterval?: string;
   brightness: 'bright' | 'neutral' | 'dark';
-  rootSemitone: number; // 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B
+  rootSemitone: number;
 }
 
 const BRIGHTNESS_COLOR: Record<string, string> = {
@@ -16,6 +16,24 @@ const BRIGHTNESS_COLOR: Record<string, string> = {
   dark: colors.dark,
 };
 
+// Plain degree numbers 1-8
+const DEGREE_NUMBERS: Record<number, string> = {
+  0:  '1',
+  1:  '2',
+  2:  '2',
+  3:  '3',
+  4:  '3',
+  5:  '4',
+  6:  '4',
+  7:  '5',
+  8:  '6',
+  9:  '6',
+  10: '7',
+  11: '7',
+  12: '8',
+};
+
+// Full degree labels for color note matching only
 const DEGREE_LABELS: Record<number, string> = {
   0:  '1',
   1:  'b2',
@@ -32,7 +50,6 @@ const DEGREE_LABELS: Record<number, string> = {
   12: '8',
 };
 
-// Prefer flat names for minor/dark modes, sharp for major/bright
 const NOTE_NAMES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
@@ -64,22 +81,18 @@ export default function ScaleDiagram({
   }
 
   const degreeLabels = intervals.map(i => DEGREE_LABELS[i] ?? '?');
+  const degreeNumbers = intervals.map(i => DEGREE_NUMBERS[i] ?? '?');
 
-  const isColorNote = (index: number) => {
-    return degreeLabels[index] === colorNoteInterval;
-  };
-
-  const isAvoidNote = (index: number) => {
-    if (!avoidNoteInterval) return false;
-    return degreeLabels[index] === avoidNoteInterval;
-  };
+  const isColorNote = (index: number) => degreeLabels[index] === colorNoteInterval;
+  const isAvoidNote = (index: number) => avoidNoteInterval ? degreeLabels[index] === avoidNoteInterval : false;
 
   return (
     <View style={styles.container}>
       {/* Blocks row */}
       <View style={styles.blocksRow}>
-        {intervals.slice(0, -1).map((_, i) => {
-          const step = steps[i];
+        {intervals.map((_, i) => {
+          const isOctave = i === intervals.length - 1;
+          const step = !isOctave ? steps[i] : null;
           const isWhole = step === 'W';
           const colorNote = isColorNote(i);
           const avoidNote = isAvoidNote(i);
@@ -98,7 +111,8 @@ export default function ScaleDiagram({
             <View key={i} style={styles.degreeCol}>
               <View style={[
                 styles.block,
-                isWhole ? styles.blockWhole : styles.blockHalf,
+                isOctave ? styles.blockHalf :
+                  (isWhole ? styles.blockWhole : styles.blockHalf),
                 { backgroundColor: blockColor, borderColor },
                 colorNote && styles.blockGlow,
               ]}>
@@ -107,23 +121,16 @@ export default function ScaleDiagram({
                   colorNote && { color: accentColor, fontWeight: '700' },
                   avoidNote && { color: colors.warning },
                 ]}>
-                  {degreeLabels[i]}
+                  {degreeNumbers[i]}
                 </Text>
               </View>
+              {/* Step label below — empty for last */}
               <Text style={[styles.stepLabel, colorNote && { color: accentColor }]}>
-                {step}
+                {step ?? ' '}
               </Text>
             </View>
           );
         })}
-
-        {/* Octave */}
-        <View style={styles.degreeCol}>
-          <View style={[styles.block, styles.blockHalf, { backgroundColor: colors.bgElevated, borderColor: colors.border }]}>
-            <Text style={styles.degreeLabel}>8</Text>
-          </View>
-          <Text style={styles.stepLabel}> </Text>
-        </View>
       </View>
 
       {/* Note names */}
@@ -138,7 +145,7 @@ export default function ScaleDiagram({
               style={[
                 styles.noteNameCol,
                 isOctave ? styles.noteNameHalf :
-                  (i < steps.length && steps[i] === 'W' ? styles.noteNameWhole : styles.noteNameHalf),
+                  (steps[i] === 'W' ? styles.noteNameWhole : styles.noteNameHalf),
               ]}
             >
               <Text style={[
