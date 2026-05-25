@@ -15,8 +15,9 @@ const RHODES_HTML = `
 <body>
 <script>
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  let stopRequested = false;
   let activeNodes = [];
+  let currentPlayId = 0;
+  let pendingTimeouts = [];
 
   function midiToFreq(midi) {
     return 440 * Math.pow(2, (midi - 69) / 12);
@@ -55,41 +56,58 @@ const RHODES_HTML = `
     modulator.start(startTime); modulator.stop(startTime + duration);
     carrier.start(startTime); carrier.stop(startTime + duration);
     tremolo.start(startTime); tremolo.stop(startTime + duration);
-    activeNodes.push(carrier, modulator, tremolo);
+    activeNodes.push(gainNode, carrier, modulator, tremolo);
   }
 
-  function stop() {
-    stopRequested = true;
+  function stopAll() {
+    // Cancel all pending timeouts
+    pendingTimeouts.forEach(t => clearTimeout(t));
+    pendingTimeouts = [];
+    // Increment playId to invalidate any in-flight callbacks
+    currentPlayId++;
+    // Stop all audio nodes
     activeNodes.forEach(n => { try { n.stop(); } catch(e) {} });
     activeNodes = [];
   }
 
   window.addEventListener('message', function(e) {
     const msg = JSON.parse(e.data);
-    if (msg.type === 'stop') { stop(); return; }
+
+    if (msg.type === 'stop') {
+      stopAll();
+      return;
+    }
+
     if (msg.type === 'playNote') {
       if (ctx.state === 'suspended') ctx.resume();
       playRhodesNote(midiToFreq(msg.midi), ctx.currentTime, msg.duration || 0.8);
       return;
     }
+
     if (msg.type === 'playScale') {
       if (ctx.state === 'suspended') ctx.resume();
-      stopRequested = false;
-      activeNodes = [];
+      stopAll(); // always stop previous before starting new
+      const playId = currentPlayId;
       const notes = msg.notes;
       const noteDuration = 0.6;
       const noteGap = 0.65;
+
       notes.forEach((midi, i) => {
         playRhodesNote(midiToFreq(midi), ctx.currentTime + i * noteGap, noteDuration);
-        setTimeout(() => {
-          if (!stopRequested) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'degree', index: i }));
+        const t = setTimeout(() => {
+          if (currentPlayId === playId) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'degree', index: i, playId }));
           }
         }, i * noteGap * 1000);
+        pendingTimeouts.push(t);
       });
-      setTimeout(() => {
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'complete' }));
+
+      const t = setTimeout(() => {
+        if (currentPlayId === playId) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'complete', playId }));
+        }
       }, notes.length * noteGap * 1000);
+      pendingTimeouts.push(t);
     }
   });
 
@@ -103,6 +121,7 @@ const RhodesEngine = forwardRef<RhodesEngineRef>((_, ref) => {
   const webViewRef = useRef<WebView>(null);
   const degreeCallbackRef = useRef<((index: number) => void) | null>(null);
   const completeCallbackRef = useRef<(() => void) | null>(null);
+  const currentPlayIdRef = useRef(0);
 
   useImperativeHandle(ref, () => ({
     playNote: (midiNote: number, duration = 0.8) => {
@@ -111,6 +130,8 @@ const RhodesEngine = forwardRef<RhodesEngineRef>((_, ref) => {
       );
     },
     playScale: (midiNotes: number[], onDegree?: (i: number) => void, onComplete?: () => void) => {
+      currentPlayIdRef.current += 1;
+      const playId = currentPlayIdRef.current;
       degreeCallbackRef.current = onDegree || null;
       completeCallbackRef.current = onComplete || null;
       webViewRef.current?.injectJavaScript(
@@ -118,11 +139,12 @@ const RhodesEngine = forwardRef<RhodesEngineRef>((_, ref) => {
       );
     },
     stop: () => {
+      currentPlayIdRef.current += 1; // invalidate callbacks
+      degreeCallbackRef.current = null;
+      completeCallbackRef.current = null;
       webViewRef.current?.injectJavaScript(
         `window.dispatchEvent(new MessageEvent('message', { data: JSON.stringify({ type: 'stop' }) })); true;`
       );
-      degreeCallbackRef.current = null;
-      completeCallbackRef.current = null;
     },
   }));
 
@@ -132,15 +154,17 @@ const RhodesEngine = forwardRef<RhodesEngineRef>((_, ref) => {
         ref={webViewRef}
         source={{ html: RHODES_HTML }}
         onMessage={(e) => {
-          const msg = JSON.parse(e.nativeEvent.data);
-          if (msg.type === 'degree' && degreeCallbackRef.current) {
-            degreeCallbackRef.current(msg.index);
-          }
-          if (msg.type === 'complete' && completeCallbackRef.current) {
-            completeCallbackRef.current();
-            degreeCallbackRef.current = null;
-            completeCallbackRef.current = null;
-          }
+          try {
+            const msg = JSON.parse(e.nativeEvent.data);
+            if (msg.type === 'degree' && degreeCallbackRef.current) {
+              degreeCallbackRef.current(msg.index);
+            }
+            if (msg.type === 'complete' && completeCallbackRef.current) {
+              completeCallbackRef.current();
+              degreeCallbackRef.current = null;
+              completeCallbackRef.current = null;
+            }
+          } catch {}
         }}
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}

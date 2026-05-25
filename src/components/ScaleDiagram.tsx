@@ -130,7 +130,7 @@ export default function ScaleDiagram({
               <TouchableOpacity
                 key={semitone}
                 style={[styles.rootNote, isSelected && { backgroundColor: accentColor + '33', borderColor: accentColor }]}
-                onPress={() => {
+                onPress={() => { setActiveDegree(null);
                   setRootSemitone(semitone);
                   if (isPlaying) { engineRef.current?.stop(); setIsPlaying(false); setActiveDegree(null); }
                 }}
