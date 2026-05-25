@@ -89,7 +89,7 @@ export default function ModeDetailScreen({ route, navigation }: any) {
 
         {/* ── Scale structure ── */}
         <Section label="Scale structure">
-          <ScaleDiagram rootSemitone={mode.degree === 1 ? 0 : mode.degree === 2 ? 2 : mode.degree === 3 ? 4 : mode.degree === 4 ? 5 : mode.degree === 5 ? 7 : mode.degree === 6 ? 9 : 11}
+          <ScaleDiagram defaultRootSemitone={mode.degree === 1 ? 0 : mode.degree === 2 ? 2 : mode.degree === 3 ? 4 : mode.degree === 4 ? 5 : mode.degree === 5 ? 7 : mode.degree === 6 ? 9 : 11}
             intervals={mode.intervals}
             colorNoteInterval={mode.colorNoteInterval}
             avoidNoteInterval={mode.avoidNoteInterval}

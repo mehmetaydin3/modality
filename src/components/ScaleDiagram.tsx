@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { colors, spacing, radius } from '../theme';
 
 interface ScaleDiagramProps {
@@ -7,7 +7,7 @@ interface ScaleDiagramProps {
   colorNoteInterval: string;
   avoidNoteInterval?: string;
   brightness: 'bright' | 'neutral' | 'dark';
-  rootSemitone: number;
+  defaultRootSemitone: number;
 }
 
 const BRIGHTNESS_COLOR: Record<string, string> = {
@@ -28,15 +28,20 @@ const DEGREE_LABELS: Record<number, string> = {
   10: 'b7', 11: '7', 12: '8',
 };
 
+const CHROMATIC_NOTES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
 const NOTE_NAMES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+// Keys that prefer flats
+const FLAT_KEYS = new Set([1, 3, 5, 8, 10]); // Db, Eb, F, Ab, Bb
 
 const WHOLE_WIDTH = 48;
 const HALF_WIDTH = 28;
 const BLOCK_HEIGHT = 44;
 
-function getNoteNames(intervals: number[], rootSemitone: number, brightness: string): string[] {
-  const names = brightness === 'bright' ? NOTE_NAMES_SHARP : NOTE_NAMES_FLAT;
+function getNoteNames(intervals: number[], rootSemitone: number): string[] {
+  const useFlats = FLAT_KEYS.has(rootSemitone);
+  const names = useFlats ? NOTE_NAMES_FLAT : NOTE_NAMES_SHARP;
   return intervals.map(interval => names[(rootSemitone + interval) % 12]);
 }
 
@@ -45,10 +50,11 @@ function getStepType(current: number, next: number): 'W' | 'H' {
 }
 
 export default function ScaleDiagram({
-  intervals, colorNoteInterval, avoidNoteInterval, brightness, rootSemitone,
+  intervals, colorNoteInterval, avoidNoteInterval, brightness, defaultRootSemitone,
 }: ScaleDiagramProps) {
+  const [rootSemitone, setRootSemitone] = useState(defaultRootSemitone);
   const accentColor = BRIGHTNESS_COLOR[brightness];
-  const noteNames = getNoteNames(intervals, rootSemitone, brightness);
+  const noteNames = getNoteNames(intervals, rootSemitone);
 
   const steps: ('W' | 'H')[] = [];
   for (let i = 0; i < intervals.length - 1; i++) {
@@ -68,9 +74,33 @@ export default function ScaleDiagram({
 
   return (
     <View style={styles.container}>
+
+      {/* Root picker */}
+      <View style={styles.rootPickerSection}>
+        <Text style={styles.rootPickerLabel}>Root</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.rootPicker}>
+          {CHROMATIC_NOTES.map((note, semitone) => {
+            const isSelected = semitone === rootSemitone;
+            return (
+              <TouchableOpacity
+                key={semitone}
+                style={[styles.rootNote, isSelected && { backgroundColor: accentColor + '33', borderColor: accentColor }]}
+                onPress={() => setRootSemitone(semitone)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.rootNoteText, isSelected && { color: accentColor, fontWeight: '700' }]}>
+                  {note}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Scale diagram */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} scrollEnabled={false}>
         <View>
-          {/* Blocks row */}
+          {/* Blocks */}
           <View style={styles.blocksRow}>
             {intervals.map((_, i) => {
               const w = getBlockWidth(i);
@@ -104,7 +134,7 @@ export default function ScaleDiagram({
             })}
           </View>
 
-          {/* Note names row */}
+          {/* Note names */}
           <View style={styles.noteNamesRow}>
             {noteNames.map((note, i) => {
               const w = getBlockWidth(i);
@@ -130,11 +160,11 @@ export default function ScaleDiagram({
       {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendWhole]} />
+          <View style={styles.legendWhole} />
           <Text style={styles.legendText}>W = whole step</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendHalf]} />
+          <View style={styles.legendHalf} />
           <Text style={styles.legendText}>H = half step</Text>
         </View>
         <View style={styles.legendItem}>
@@ -154,6 +184,34 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: spacing.md,
     marginBottom: spacing.sm,
+  },
+  rootPickerSection: {
+    marginBottom: spacing.md,
+  },
+  rootPickerLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textTertiary,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: spacing.sm,
+  },
+  rootPicker: {
+    flexDirection: 'row',
+  },
+  rootNote: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgElevated,
+    marginRight: 6,
+  },
+  rootNoteText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.textSecondary,
   },
   blocksRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 2 },
   degreeCol: { alignItems: 'center' },
