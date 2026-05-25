@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors, spacing, radius } from '../theme';
 
 interface ScaleDiagramProps {
@@ -16,49 +16,28 @@ const BRIGHTNESS_COLOR: Record<string, string> = {
   dark: colors.dark,
 };
 
-// Plain degree numbers 1-8
 const DEGREE_NUMBERS: Record<number, string> = {
-  0:  '1',
-  1:  '2',
-  2:  '2',
-  3:  '3',
-  4:  '3',
-  5:  '4',
-  6:  '4',
-  7:  '5',
-  8:  '6',
-  9:  '6',
-  10: '7',
-  11: '7',
-  12: '8',
+  0: '1', 1: '2', 2: '2', 3: '3', 4: '3',
+  5: '4', 6: '4', 7: '5', 8: '6', 9: '6',
+  10: '7', 11: '7', 12: '8',
 };
 
-// Full degree labels for color note matching only
 const DEGREE_LABELS: Record<number, string> = {
-  0:  '1',
-  1:  'b2',
-  2:  '2',
-  3:  'b3',
-  4:  '3',
-  5:  '4',
-  6:  '#4',
-  7:  '5',
-  8:  'b6',
-  9:  '6',
-  10: 'b7',
-  11: '7',
-  12: '8',
+  0: '1', 1: 'b2', 2: '2', 3: 'b3', 4: '3',
+  5: '4', 6: '#4', 7: '5', 8: 'b6', 9: '6',
+  10: 'b7', 11: '7', 12: '8',
 };
 
 const NOTE_NAMES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
+const WHOLE_WIDTH = 48;
+const HALF_WIDTH = 24;
+const BLOCK_HEIGHT = 44;
+
 function getNoteNames(intervals: number[], rootSemitone: number, brightness: string): string[] {
   const names = brightness === 'bright' ? NOTE_NAMES_SHARP : NOTE_NAMES_FLAT;
-  return intervals.map((interval) => {
-    const semitone = (rootSemitone + interval) % 12;
-    return names[semitone];
-  });
+  return intervals.map(interval => names[(rootSemitone + interval) % 12]);
 }
 
 function getStepType(current: number, next: number): 'W' | 'H' {
@@ -66,11 +45,7 @@ function getStepType(current: number, next: number): 'W' | 'H' {
 }
 
 export default function ScaleDiagram({
-  intervals,
-  colorNoteInterval,
-  avoidNoteInterval,
-  brightness,
-  rootSemitone,
+  intervals, colorNoteInterval, avoidNoteInterval, brightness, rootSemitone,
 }: ScaleDiagramProps) {
   const accentColor = BRIGHTNESS_COLOR[brightness];
   const noteNames = getNoteNames(intervals, rootSemitone, brightness);
@@ -83,106 +58,93 @@ export default function ScaleDiagram({
   const degreeLabels = intervals.map(i => DEGREE_LABELS[i] ?? '?');
   const degreeNumbers = intervals.map(i => DEGREE_NUMBERS[i] ?? '?');
 
-  const isColorNote = (index: number) => degreeLabels[index] === colorNoteInterval;
-  const isAvoidNote = (index: number) => avoidNoteInterval ? degreeLabels[index] === avoidNoteInterval : false;
+  const isColorNote = (i: number) => degreeLabels[i] === colorNoteInterval;
+  const isAvoidNote = (i: number) => !!avoidNoteInterval && degreeLabels[i] === avoidNoteInterval;
+
+  const getBlockWidth = (i: number) => {
+    if (i === intervals.length - 1) return HALF_WIDTH;
+    return steps[i] === 'W' ? WHOLE_WIDTH : HALF_WIDTH;
+  };
 
   return (
     <View style={styles.container}>
-      {/* Blocks row */}
-      <View style={styles.blocksRow}>
-        {intervals.map((_, i) => {
-          const isOctave = i === intervals.length - 1;
-          const step = !isOctave ? steps[i] : null;
-          const isWhole = step === 'W';
-          const colorNote = isColorNote(i);
-          const avoidNote = isAvoidNote(i);
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} scrollEnabled={false}>
+        <View>
+          {/* Blocks row */}
+          <View style={styles.blocksRow}>
+            {intervals.map((_, i) => {
+              const w = getBlockWidth(i);
+              const colorNote = isColorNote(i);
+              const avoidNote = isAvoidNote(i);
+              let bgColor = colors.bgElevated;
+              let borderColor = colors.border;
+              if (colorNote) { bgColor = accentColor + '33'; borderColor = accentColor; }
+              else if (avoidNote) { bgColor = colors.warning + '22'; borderColor = colors.warning; }
 
-          let blockColor = colors.bgElevated;
-          let borderColor = colors.border;
-          if (colorNote) {
-            blockColor = accentColor + '33';
-            borderColor = accentColor;
-          } else if (avoidNote) {
-            blockColor = colors.warning + '22';
-            borderColor = colors.warning;
-          }
+              return (
+                <View key={i} style={[styles.degreeCol, { width: w }]}>
+                  <View style={[
+                    styles.block,
+                    { width: w - 4, backgroundColor: bgColor, borderColor },
+                    colorNote && styles.blockGlow,
+                  ]}>
+                    <Text style={[
+                      styles.degreeLabel,
+                      colorNote && { color: accentColor, fontWeight: '700' },
+                      avoidNote && { color: colors.warning },
+                    ]}>
+                      {degreeNumbers[i]}
+                    </Text>
+                  </View>
+                  <Text style={[styles.stepLabel, colorNote && { color: accentColor }]}>
+                    {i < steps.length ? steps[i] : ' '}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
 
-          return (
-            <View key={i} style={styles.degreeCol}>
-              <View style={[
-                styles.block,
-                isOctave ? styles.blockHalf :
-                  (isWhole ? styles.blockWhole : styles.blockHalf),
-                { backgroundColor: blockColor, borderColor },
-                colorNote && styles.blockGlow,
-              ]}>
-                <Text style={[
-                  styles.degreeLabel,
-                  colorNote && { color: accentColor, fontWeight: '700' },
-                  avoidNote && { color: colors.warning },
-                ]}>
-                  {degreeNumbers[i]}
-                </Text>
-              </View>
-              {/* Step label below — empty for last */}
-              <Text style={[styles.stepLabel, colorNote && { color: accentColor }]}>
-                {step ?? ' '}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-
-      {/* Note names */}
-      <View style={styles.noteNamesRow}>
-        {noteNames.map((note, i) => {
-          const colorNote = isColorNote(i);
-          const avoidNote = isAvoidNote(i);
-          const isOctave = i === noteNames.length - 1;
-          return (
-            <View
-              key={i}
-              style={[
-                styles.noteNameCol,
-                isOctave ? styles.noteNameHalf :
-                  (steps[i] === 'W' ? styles.noteNameWhole : styles.noteNameHalf),
-              ]}
-            >
-              <Text style={[
-                styles.noteName,
-                colorNote && { color: accentColor, fontWeight: '700' },
-                avoidNote && { color: colors.warning },
-                !colorNote && !avoidNote && { color: colors.textSecondary },
-              ]}>
-                {note}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+          {/* Note names row */}
+          <View style={styles.noteNamesRow}>
+            {noteNames.map((note, i) => {
+              const w = getBlockWidth(i);
+              const colorNote = isColorNote(i);
+              const avoidNote = isAvoidNote(i);
+              return (
+                <View key={i} style={[styles.noteNameCol, { width: w }]}>
+                  <Text style={[
+                    styles.noteName,
+                    colorNote && { color: accentColor, fontWeight: '700' },
+                    avoidNote && { color: colors.warning },
+                    !colorNote && !avoidNote && { color: colors.textSecondary },
+                  ]}>
+                    {note}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      </ScrollView>
 
       {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendBlock, styles.legendWhole]} />
+          <View style={[styles.legendWhole]} />
           <Text style={styles.legendText}>W = whole step</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendBlock, styles.legendHalf]} />
+          <View style={[styles.legendHalf]} />
           <Text style={styles.legendText}>H = half step</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendBlock, { backgroundColor: accentColor + '33', borderColor: accentColor, borderWidth: 1, width: 14 }]} />
+          <View style={[styles.legendColor, { backgroundColor: accentColor + '33', borderColor: accentColor }]} />
           <Text style={[styles.legendText, { color: accentColor }]}>color note</Text>
         </View>
       </View>
     </View>
   );
 }
-
-const WHOLE_WIDTH = 44;
-const HALF_WIDTH = 28;
-const BLOCK_HEIGHT = 40;
 
 const styles = StyleSheet.create({
   container: {
@@ -193,11 +155,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
-  blocksRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 4,
-  },
+  blocksRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 2 },
   degreeCol: { alignItems: 'center' },
   block: {
     height: BLOCK_HEIGHT,
@@ -205,10 +163,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 1,
+    marginHorizontal: 2,
   },
-  blockWhole: { width: WHOLE_WIDTH },
-  blockHalf: { width: HALF_WIDTH },
   blockGlow: {
     shadowColor: colors.accent,
     shadowOffset: { width: 0, height: 0 },
@@ -216,47 +172,15 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
   },
-  degreeLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  stepLabel: {
-    fontSize: 10,
-    color: colors.textTertiary,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  noteNamesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  noteNameCol: { alignItems: 'center', marginHorizontal: 1 },
-  noteNameWhole: { width: WHOLE_WIDTH },
-  noteNameHalf: { width: HALF_WIDTH },
-  noteName: { fontSize: 12, fontWeight: '500' },
-  legend: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-    flexWrap: 'wrap',
-  },
+  degreeLabel: { fontSize: 12, fontWeight: '600', color: colors.textSecondary },
+  stepLabel: { fontSize: 10, color: colors.textTertiary, marginTop: 4, fontWeight: '500' },
+  noteNamesRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
+  noteNameCol: { alignItems: 'center' },
+  noteName: { fontSize: 13, fontWeight: '500' },
+  legend: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md, flexWrap: 'wrap' },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  legendBlock: { height: 14, borderRadius: 3 },
-  legendWhole: {
-    width: 20,
-    backgroundColor: colors.bgElevated,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  legendHalf: {
-    width: 14,
-    backgroundColor: colors.bgElevated,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
+  legendWhole: { width: 20, height: 14, borderRadius: 3, backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border },
+  legendHalf: { width: 12, height: 14, borderRadius: 3, backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border },
+  legendColor: { width: 14, height: 14, borderRadius: 3, borderWidth: 1 },
   legendText: { fontSize: 11, color: colors.textTertiary },
 });
