@@ -1,29 +1,29 @@
 export const YOUTUBE_IDS: Record<string, string> = {
-  // Ionian
-  'Misty':                      'b3DtKAEBNKI',
-  // Dorian — 1959 TV appearance, not label-owned
+  // Ionian — Erroll Garner live Brussels 1964, small channel
+  'Misty':                      'P_tAU3GM9XI',
+  // Dorian
   'So What':                    '2uTQQKU6ge0',
   'Maiden Voyage':              'hwmRQ0PBtXU',
-  // Phrygian
-  'Impressions':                'wqofNDFSKXk',
+  // Phrygian — Coltrane Quartet live, small channel
+  'Impressions':                'zfrUfiNIZk0',
   'Spain':                      'XfQJMhMRUcw',
-  // Lydian
-  'Flying (E.T. Theme)':        'M2cknGHuEo8',
+  // Lydian — Danish National Symphony live, likely embeddable
+  'Flying (E.T. Theme)':        'W2Fot5Sb8DM',
   // Mixolydian
   'Norwegian Wood':             'B_RQv7OMJFI',
-  // Aeolian
-  'My Funny Valentine':         'dLxhFPCYKcI',
+  // Aeolian — Chet Baker live Tokyo 1987, small channel
+  'My Funny Valentine':         'UOEIQKczRPY',
   'Summertime':                 'XeOCEYMFEFk',
   // Locrian
   'Autumn Leaves (minor ii-V)': 'r-Z8KuwI7Gc',
 };
 
 export const LESSON_YOUTUBE_IDS: Record<string, string> = {
-  ionian:     'b3DtKAEBNKI',
+  ionian:     'P_tAU3GM9XI',
   dorian:     '2uTQQKU6ge0',
-  phrygian:   'wqofNDFSKXk',
-  lydian:     'M2cknGHuEo8',
+  phrygian:   'zfrUfiNIZk0',
+  lydian:     'W2Fot5Sb8DM',
   mixolydian: 'B_RQv7OMJFI',
-  aeolian:    'dLxhFPCYKcI',
+  aeolian:    'UOEIQKczRPY',
   locrian:    'r-Z8KuwI7Gc',
 };
