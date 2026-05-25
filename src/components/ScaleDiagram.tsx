@@ -31,8 +31,8 @@ const DEGREE_LABELS: Record<number, string> = {
 const NOTE_NAMES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const NOTE_NAMES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
-const WHOLE_WIDTH = 58;
-const HALF_WIDTH = 20;
+const WHOLE_WIDTH = 48;
+const HALF_WIDTH = 28;
 const BLOCK_HEIGHT = 44;
 
 function getNoteNames(intervals: number[], rootSemitone: number, brightness: string): string[] {
