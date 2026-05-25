@@ -189,7 +189,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q-tn-sowhat',
     type: 'tune_name',
-    prompt: 'Listen to this recording. Which mode is this tune built on?',
+    prompt: '"So What" by Miles Davis. Which mode is this tune built on?',
     options: ['Aeolian', 'Mixolydian', 'Dorian', 'Lydian'],
     correctAnswer: 'Dorian',
     explanation:
@@ -206,7 +206,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q-tn-impressions',
     type: 'tune_name',
-    prompt: 'Listen to this recording. The B section uses which mode?',
+    prompt: 'Coltrane's "Impressions" — the B section uses which mode?',
     options: ['Dorian', 'Aeolian', 'Phrygian', 'Locrian'],
     correctAnswer: 'Phrygian',
     explanation:
@@ -223,7 +223,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q-tn-maidenvoyage',
     type: 'tune_name',
-    prompt: 'Listen to this recording. Which mode is primarily used here?',
+    prompt: 'Herbie Hancock's "Maiden Voyage." Which mode is primarily used?',
     options: ['Ionian', 'Lydian', 'Mixolydian', 'Dorian'],
     correctAnswer: 'Dorian',
     explanation:
@@ -239,7 +239,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q-tn-spain',
     type: 'tune_name',
-    prompt: 'Listen to this recording. Which mode does the opening melody draw from?',
+    prompt: 'Chick Corea's "Spain." Which mode does the opening melody draw from?',
     options: ['Aeolian', 'Locrian', 'Dorian', 'Phrygian'],
     correctAnswer: 'Phrygian',
     explanation:
