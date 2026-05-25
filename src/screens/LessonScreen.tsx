@@ -164,7 +164,7 @@ export default function LessonScreen({ route, navigation }: any) {
                 {mode.classicTunes[0]?.title} · {mode.classicTunes[0]?.artist}
               </Text>
             )}
-            <YouTubeEmbed videoId={LESSON_LESSON_YOUTUBE_IDS[page.modeId!]} />
+            <YouTubeEmbed videoId={LESSON_YOUTUBE_IDS[page.modeId!]} />
           </View>
         )}
 
