@@ -206,7 +206,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q-tn-impressions',
     type: 'tune_name',
-    prompt: 'Coltrane's "Impressions" — the B section uses which mode?',
+    prompt: `Coltrane's "Impressions" — the B section uses which mode?`,
     options: ['Dorian', 'Aeolian', 'Phrygian', 'Locrian'],
     correctAnswer: 'Phrygian',
     explanation:
@@ -223,7 +223,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q-tn-maidenvoyage',
     type: 'tune_name',
-    prompt: 'Herbie Hancock's "Maiden Voyage." Which mode is primarily used?',
+    prompt: `Herbie Hancock's "Maiden Voyage." Which mode is primarily used?`,
     options: ['Ionian', 'Lydian', 'Mixolydian', 'Dorian'],
     correctAnswer: 'Dorian',
     explanation:
