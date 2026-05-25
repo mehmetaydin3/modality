@@ -197,7 +197,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       'Miles, Coltrane, and Bill Evans all demonstrate the mode at its most essential.',
     modeId: 'dorian',
     videoIds: [
-      '2uTQQKU6ge0',  // 1959 TV appearance
+      'y_hl3w74J2I',  // Michel Petrucciani Montreux 1996 BMG official
       'zqNTltOGh5c',  // Official video
       '6w4FI0Jq0lI',  // Live 1959
     ],
@@ -214,7 +214,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       'The contrast between Dorian lifting and Phrygian pressing down is visceral.',
     modeId: 'phrygian',
     videoIds: [
-      'zfrUfiNIZk0',  // Live quartet
+      'OZZYm6rUsS0',  // Coltrane + Eric Dolphy Village Gate official
       'SK1B_-PBhZk',  // Live enhanced
       'OZZYm6rUsS0',  // Village Gate
     ],

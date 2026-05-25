@@ -1,8 +1,8 @@
 export const YOUTUBE_IDS: Record<string, string> = {
   // Ionian — Erroll Garner live Brussels 1964
   'Misty':                      'P_tAU3GM9XI',
-  // Dorian — 1959 TV appearance Miles Davis + Coltrane
-  'So What':                    '2uTQQKU6ge0',
+  // Dorian — Michel Petrucciani, BMG official, Montreux 1996
+  'So What':                    'y_hl3w74J2I',
   // Dorian — UNESCO International Jazz Day 2022 official
   'Maiden Voyage':              'G3in_Ewqu_g',
   // Phrygian — Coltrane Quartet live
@@ -13,20 +13,20 @@ export const YOUTUBE_IDS: Record<string, string> = {
   'Flying (E.T. Theme)':        'W2Fot5Sb8DM',
   // Mixolydian — Official Beatles audio
   'Norwegian Wood':             'B_RQv7OMJFI',
-  // Aeolian — Chet Baker live Tokyo 1987
-  'My Funny Valentine':         'UOEIQKczRPY',
-  // Aeolian — live performance
-  'Summertime':                 'XeOCEYMFEFk',
-  // Locrian
-  'Autumn Leaves (minor ii-V)': 'r-Z8KuwI7Gc',
+  // Aeolian — Michel Petrucciani, BMG official, Montreux 1996
+  'My Funny Valentine':         'rtVMzzm2_L0',
+  // Aeolian — Michel Petrucciani, BMG official, Montreux 1993
+  'Summertime':                 'B6F9FNbfLUE',
+  // Locrian — Jazz at Philharmonic, Montreux 1975
+  'Autumn Leaves (minor ii-V)': 'Yn4MJbjUgr0',
 };
 
 export const LESSON_YOUTUBE_IDS: Record<string, string> = {
   ionian:     'P_tAU3GM9XI',
-  dorian:     'G3in_Ewqu_g',  // Maiden Voyage — Jazz Day 2022
-  phrygian:   'PnkAT6vbAk4',  // Spain — Jazz Day 2024
+  dorian:     'G3in_Ewqu_g',
+  phrygian:   'PnkAT6vbAk4',
   lydian:     'W2Fot5Sb8DM',
   mixolydian: 'B_RQv7OMJFI',
-  aeolian:    'UOEIQKczRPY',
-  locrian:    'r-Z8KuwI7Gc',
+  aeolian:    'rtVMzzm2_L0',
+  locrian:    'Yn4MJbjUgr0',
 };
